@@ -1,1 +1,1 @@
-Bolleyballer
+Bolleyballer is a score tracker for custom Volleyball games that features player win tracking across games using SQL, team initiation, and automatic win detection. Compile with Rosyln or Visual Studio to run
