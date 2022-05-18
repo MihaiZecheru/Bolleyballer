@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace Bolleyballer
 {
@@ -9,6 +10,7 @@ namespace Bolleyballer
         public Bolleyballer()
         {
             InitializeComponent();
+            this.showscores_outputbox.Hide();
             __init_placeholder_text();
             this.ActiveControl = this.addmember_team1;
         }
@@ -39,19 +41,8 @@ namespace Bolleyballer
             this.winning_team_display.Location = new System.Drawing.Point((this.winning_team_display.Parent.Width - this.winning_team_display.Width) / 2, this.winning_team_display.Location.Y);
 
             // award points to members of winning team
-            Database db = new Database();
-            string command =
-                "UPDATE wins " +
-                "SET score = score + 1 " +
-                "WHERE name IN (";
-
-            for (int i = 0; i < team_members.Length; i++)
-            {
-                command += team_members[i];
-                if (i != team_members.Length) command += ", ";
-            }
-            command += ");";
-            db.Execute(command);
+            Database.AwardWin(team_members);
+            
 
             this.page_endgame.Visible = true;
         }
@@ -87,7 +78,7 @@ namespace Bolleyballer
 
         private void startgame_button_Click(object sender, EventArgs e)
         {
-            if (this.memberlist_team1.Items.Count == 0 || this.memberlist_team1.Items.Count == 0)
+            if (this.memberlist_team1.Items.Count == 0 || this.memberlist_team2.Items.Count == 0)
             {
                 MessageBox.Show("Add at least one member to each team to continue", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 return;
@@ -116,26 +107,13 @@ namespace Bolleyballer
                 this.memberdisplay_team2.Items.Add(member);
 
             // add players to db
-            Database db = new Database();
-            foreach (string member in team1_members)
-            {
-                string command =
-                "INSERT INTO wins (name, score) " +
-                $"VALUES (\'{member}\', 0);";
-                db.Execute(command);
-            }
-            foreach (string member in team2_members)
-            {
-                string command =
-                "INSERT INTO wins (name, score) " +
-                $"VALUES (\'{member}\', 0);";
-                db.Execute(command);
-            }
+            Database.UpdateExistingPlayers(team1_members);
+            Database.UpdateExistingPlayers(team2_members);
 
             // show game page
             this.page_pregame.Dispose();
             this.page_game.BringToFront();
-            this.ActiveControl = this.score_team1;
+            this.ActiveControl = this.memberdisplay_team1;
             this.page_pregame.Visible = true;
         }
         
@@ -185,9 +163,93 @@ namespace Bolleyballer
             Environment.Exit(0);
         }
 
-        private void show_scores_button_Click(object sender, EventArgs e)
+        private async void show_scores_button_Click(object sender, EventArgs e)
         {
-            
+            // get all player data
+            Dictionary<object, object> _db = await Database.RetrieveDatabase();
+            Newtonsoft.Json.Linq.JArray _data = (Newtonsoft.Json.Linq.JArray)_db["data"];
+            List<object> db = _data.ToObject<List<object>>();
+
+            // prepare output box
+            this.endgame_buttons.Location = new System.Drawing.Point(this.endgame_buttons.Location.X, this.endgame_buttons.Location.Y - 358);
+            this.showscores_outputbox.Show();
+
+            // sorted player scores
+            List<Tuple<string, int>> players = new List<Tuple<string, int>>();
+
+            for (int i = 0; i < db.Count; i++)
+            {
+                Newtonsoft.Json.Linq.JObject _player = (Newtonsoft.Json.Linq.JObject)db[i];
+                Dictionary<string, object> player = _player.ToObject<Dictionary<string, object>>();
+                
+                int score = int.Parse((string)player["score"]);
+                string name = (string)player["name"];
+
+                players.Add(new Tuple<string, int>(name, score));
+            }
+
+            players.Sort((x, y) => x.Item1.CompareTo(x.Item1));
+            players.Reverse();
+
+            foreach (Tuple<string, int> player in players)
+                this.showscores_outputbox.Items.Add($"{player.Item1}: {player.Item2}");
+        }
+
+        private void page_game_keypress_handler(KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)49) // 1
+                addpoint_team1_Click(null, null);
+            else if (e.KeyChar == (char)50) // 2
+                addpoint_team2_Click(null, null);
+        }
+
+
+        private void showscores_outputbox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.showscores_outputbox.ClearSelected();
+            this.ActiveControl = this.page_endgame;
+        }
+
+        private void memberlist_team1_DoubleClick(object sender, EventArgs e)
+        {
+            // remove last element from the element
+            this.memberlist_team1.Items.RemoveAt(this.memberlist_team1.Items.Count - 1);
+        }
+
+        private void memberlist_team2_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            // remove last element from the element
+            this.memberlist_team2.Items.RemoveAt(this.memberlist_team2.Items.Count - 1);
+        }
+
+        private void memberdisplay_team1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            page_game_keypress_handler(e);
+        }
+
+        private void memberdisplay_team2_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            page_game_keypress_handler(e);
+        }
+
+        private void addpoint_team1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            page_game_keypress_handler(e);
+        }
+
+        private void addpoint_team2_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            page_game_keypress_handler(e);
+        }
+
+        private void addmember_team1_Leave(object sender, EventArgs e)
+        {
+            this.addmember_team1.Text = "";
+        }
+
+        private void addmember_team2_Leave(object sender, EventArgs e)
+        {
+            this.addmember_team2.Text = "";
         }
     }
 }
