@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Media;
 
 namespace Bolleyballer
 {
@@ -17,6 +18,7 @@ namespace Bolleyballer
 
         private void declare_winner(int team)
         {
+            PlaySound.Win();
             string team_name = team == 1 ? this.teamdisplay_team1.Text : this.teamdisplay_team2.Text;
 
             string[] team_members;
@@ -49,6 +51,7 @@ namespace Bolleyballer
 
         private void add_point(int team)
         {
+            PlaySound.Award();
             int score = 0;
             switch (team)
             {
@@ -250,6 +253,26 @@ namespace Bolleyballer
         private void addmember_team2_Leave(object sender, EventArgs e)
         {
             this.addmember_team2.Text = "";
+        }
+    }
+
+    public class PlaySound
+    {
+        private static bool IsWindows { get; } = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
+        private static SoundPlayer Sound { get; set; }
+
+        public static async void Award()
+        {
+            if (!IsWindows) return;
+            Sound = new SoundPlayer("award.wav");
+            Sound.Play();
+        }
+
+        public static async void Win()
+        {
+            if (!IsWindows) return;
+            Sound = new SoundPlayer("win.wav");
+            Sound.Play();
         }
     }
 }

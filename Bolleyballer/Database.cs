@@ -11,7 +11,7 @@ namespace Bolleyballer
 {
     public class Database
     {
-        internal static string key = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhcGlfa2V5IjoiOWMzNzMzNWQtMmQ3Yy00ZGJlLWFkMjUtZmRkYjE4MGRkMzg0IiwidGVuYW50X2lkIjo1MDIsImp0aV9rZXkiOiI5ZGI3NjcwMi1kNTkxLTExZWMtYmM1Yy0wYWMxNWY0NGM5MTUifQ.O8oNoJlWzdTEk0It7knfVw5I8alk0Rc5Gfi5xoatFKw";
+        internal static string key = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhcGlfa2V5IjoiOWMzNzMzNWQtMmQ3Yy00ZGJlLWFkMjUtZmRkYjE4MGRkMzg0IiwidGVuYW50X2lkIjo1MDIsImp0aV9rZXkiOiJiMDM0NzFlMi1lOWQwLTExZWMtODhhNy0xMjk3MzVjMDc2ZWQifQ.ToLQLScrjXge-KJjw-8CRIzyS_m6eel-f5c-6UHyIck";
         internal static string id = "436";
         internal static string url = "https://scoretracker.fireapis.com/bolleyballer/";
 
